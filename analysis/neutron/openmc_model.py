@@ -312,7 +312,7 @@ def baby_geometry(x_c: float, y_c: float, z_c: float):
     return sphere, cllif_cell, cells
 
 
-def baby_model():
+def baby_model() -> openmc.Model:
     """Returns an openmc model of the BABY experiment.
 
     Returns:
