@@ -508,7 +508,7 @@
                         ]
                     }
                 ],
-                "background_directory": "../250501_1L_BABY_Run4A/Background_20250506_1647_count1/UNFILTERED",
+                "background_directory": "../../irradiation_1/250501_1L_BABY_Run4A/Background_20250506_1647_count1/UNFILTERED",
                 "check_sources": {
                     "Co60 Count 1": {
                         "directory": "Co60_0_872uCi_2014Mar19_count1/UNFILTERED",
