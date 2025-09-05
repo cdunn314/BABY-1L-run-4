@@ -16,7 +16,7 @@ from libra_toolbox.neutron_detection.activation_foils.compass import (
     SampleMeasurement,
 )
 from libra_toolbox.tritium.model import ureg
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import json
 from zoneinfo import ZoneInfo
 from download_raw_foil_data import download_and_extract_foil_data
@@ -463,9 +463,32 @@ for generator in general_data["generators"]:
                 "t_off": (end_time - overall_start_time).total_seconds(),
             }
         )
-time_generator_off = end_time
-time_generator_off = time_generator_off.replace(tzinfo=ZoneInfo("America/New_York"))
 
+irradiation_dict = {}
+time_generator_off_dict = {}
+irr_ind = 1
+# seperate irradiations by day
+for i, irradiation in enumerate(irradiations):
+    if i == 0:
+        irradiation_dict[irr_ind] = [irradiation]
+    else:
+        # if the time between the end of the last irradiation and the start of this one is more than 24 hours, increment the index
+        if irradiation["t_on"] - irradiations[i - 1]["t_off"] > 24 * 3600:
+            time_generator_off_dict[irr_ind] = (
+                overall_start_time + timedelta(seconds=irradiations[i - 1]["t_off"])
+            )
+            time_generator_off_dict[irr_ind] = time_generator_off_dict[irr_ind].replace(tzinfo=ZoneInfo("America/New_York"))
+            irr_ind += 1
+            irradiation_dict[irr_ind] = [irradiation]
+        else:
+            irradiation_dict[irr_ind].append(irradiation)
+
+time_generator_off_dict[irr_ind] = (
+    overall_start_time + timedelta(seconds=irradiations[-1]["t_off"])
+)
+time_generator_off_dict[irr_ind] = time_generator_off_dict[irr_ind].replace(tzinfo=ZoneInfo("America/New_York"))
+
+print("time_generator_off_dict:", time_generator_off_dict)
 
 
 def calculate_neutron_rate_from_foil(foil_measurements, 
@@ -474,8 +497,8 @@ def calculate_neutron_rate_from_foil(foil_measurements,
                                      calibration_coeffs,
                                      efficiency_coeffs,
                                      search_width=330,
-                                     irradiations=irradiations,
-                                     time_generator_off=time_generator_off):
+                                     irradiations=None,
+                                     time_generator_off=None):
     neutron_rates = {}
     neutron_rate_errs = {}
 
